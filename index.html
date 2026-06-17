@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rheology Quiz</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a3a5c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rheology">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="shortcut icon" href="icons/favicon.ico">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#ebebea;
+  --txt:#1a1a18;--txt2:#5a5a56;--txt3:#9a9a94;
+  --border:rgba(0,0,0,0.11);--border2:rgba(0,0,0,0.20);
+  --correct-bg:#eaf3de;--correct-border:#639922;--correct-txt:#3b6d11;
+  --wrong-bg:#fcebeb;--wrong-border:#e24b4a;--wrong-txt:#a32d2d;
+  --info-bg:#e6f1fb;--info-border:#378add;--info-txt:#185fa5;
+  --amber-bg:#faeeda;--amber-txt:#854f0b;--amber-border:#ef9f27;
+  --red-bg:#fcebeb;--red-txt:#a32d2d;--red-border:#e24b4a;
+  --purple-bg:#f0eafa;--purple-txt:#5b2d8e;--purple-border:#8b5cf6;
+  --teal-bg:#e0f4f1;--teal-txt:#0f6e56;--teal-border:#1d9e75;
+  --r-md:8px;--r-lg:12px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
+  --txt:#f0f0ec;--txt2:#a0a09a;--txt3:#606058;
+  --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.18);
+  --correct-bg:#1a3a0a;--correct-border:#639922;--correct-txt:#c0dd97;
+  --wrong-bg:#3a0f0f;--wrong-border:#e24b4a;--wrong-txt:#f7c1c1;
+  --info-bg:#0c2f52;--info-border:#378add;--info-txt:#b5d4f4;
+  --amber-bg:#3a2008;--amber-txt:#fac775;--amber-border:#ef9f27;
+  --red-bg:#3a0f0f;--red-txt:#f7c1c1;--red-border:#e24b4a;
+  --purple-bg:#1e1035;--purple-txt:#c4b5fd;--purple-border:#8b5cf6;
+  --teal-bg:#0a2e26;--teal-txt:#6ee7b7;--teal-border:#1d9e75;
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
+.app{max-width:440px;margin:0 auto;padding:16px 14px 48px;}
+.top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.app-label{font-size:12px;font-weight:500;color:var(--txt3);letter-spacing:.04em;text-transform:uppercase;}
+.score-pill{font-size:12px;font-weight:500;color:var(--txt2);background:var(--bg2);border:.5px solid var(--border2);padding:4px 10px;border-radius:999px;}
+.filter-scroll{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.filter-scroll::-webkit-scrollbar{display:none;}
+.filter-btn{flex-shrink:0;font-size:11px;padding:5px 10px;border-radius:999px;border:.5px solid var(--border2);background:transparent;color:var(--txt2);cursor:pointer;white-space:nowrap;}
+.filter-btn.active{background:var(--txt);color:var(--bg);border-color:transparent;}
+.progress-row{display:flex;gap:8px;align-items:center;margin-bottom:14px;}
+.prog-bar{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--txt2);border-radius:3px;transition:width .4s ease;}
+.prog-label{font-size:11px;color:var(--txt3);min-width:36px;text-align:right;}
+.tier-badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 9px;border-radius:999px;margin-bottom:10px;}
+.tier-0{background:var(--info-bg);color:var(--info-txt);}
+.tier-1{background:var(--amber-bg);color:var(--amber-txt);}
+.tier-2{background:var(--red-bg);color:var(--red-txt);}
+.tier-3{background:var(--purple-bg);color:var(--purple-txt);}
+.tier-4{background:var(--teal-bg);color:var(--teal-txt);}
+.qcard{background:var(--bg);border:.5px solid var(--border2);border-radius:var(--r-lg);padding:18px;margin-bottom:12px;}
+.qnum{font-size:11px;color:var(--txt3);margin-bottom:6px;}
+.qtext{font-size:15px;font-weight:500;line-height:1.45;color:var(--txt);margin-bottom:4px;}
+.qsub{font-size:13px;color:var(--txt2);margin-top:5px;font-style:italic;line-height:1.5;}
+.depth-tag{display:inline-block;font-size:10px;background:var(--bg3);color:var(--txt2);border:.5px solid var(--border);padding:2px 8px;border-radius:999px;margin-top:6px;}
+.choices{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.choice{width:100%;text-align:left;padding:11px 14px;border-radius:var(--r-md);border:.5px solid var(--border2);background:var(--bg);color:var(--txt);font-size:14px;line-height:1.4;cursor:pointer;transition:background .1s,border-color .1s;-webkit-tap-highlight-color:transparent;}
+.choice.correct{border-color:var(--correct-border);background:var(--correct-bg);color:var(--correct-txt);font-weight:500;}
+.choice.wrong{border-color:var(--wrong-border);background:var(--wrong-bg);color:var(--wrong-txt);}
+.choice.dimmed{opacity:.4;}
+.feedback{border-radius:var(--r-md);padding:14px;margin-bottom:10px;}
+.feedback.correct{border:.5px solid var(--correct-border);background:var(--correct-bg);}
+.feedback.wrong{border:.5px solid var(--wrong-border);background:var(--wrong-bg);}
+.fb-head{font-weight:500;font-size:14px;margin-bottom:5px;}
+.fb-head.c{color:var(--correct-txt);}
+.fb-head.w{color:var(--wrong-txt);}
+.fb-txt{color:var(--txt);font-size:13px;line-height:1.65;}
+.citation{font-size:11px;color:var(--txt3);margin-top:8px;border-top:.5px solid var(--border);padding-top:7px;line-height:1.55;}
+.action-row{display:flex;gap:8px;}
+.btn{flex:1;padding:11px;border-radius:var(--r-md);border:.5px solid var(--border2);background:var(--bg);color:var(--txt);font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.btn.primary{background:var(--txt);color:var(--bg);border-color:transparent;font-weight:500;}
+.btn.info{background:var(--info-bg);color:var(--info-txt);border-color:var(--info-border);}
+.tag-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;}
+.tag{font-size:10px;padding:2px 7px;border-radius:999px;background:var(--bg2);color:var(--txt3);border:.5px solid var(--border);}
+.results{text-align:center;padding:28px 8px;}
+.results-ring{width:110px;height:110px;margin:0 auto 18px;position:relative;}
+.results-ring svg{width:110px;height:110px;}
+.results-pct{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:26px;font-weight:500;}
+.results-grade{font-size:22px;font-weight:500;margin-bottom:8px;}
+.results-label{font-size:14px;color:var(--txt2);margin-bottom:4px;}
+.results-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:18px 0;}
+.rstat{background:var(--bg2);border-radius:var(--r-md);padding:10px 6px;text-align:center;}
+.rstat-val{font-size:20px;font-weight:500;}
+.rstat-lbl{font-size:10px;color:var(--txt3);margin-top:2px;}
+.streak-bar{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+.streak-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.streak-dot.hit{background:var(--correct-border);}
+.streak-dot.miss{background:var(--wrong-border);}
+.results-btns{display:flex;gap:8px;flex-direction:column;margin-top:18px;}
+.install-banner{display:none;background:var(--info-bg);border:.5px solid var(--info-border);border-radius:var(--r-lg);padding:10px 12px;margin-bottom:10px;font-size:13px;color:var(--info-txt);}
+.install-banner.visible{display:flex;align-items:center;gap:8px;}
+.install-banner button{background:var(--info-txt);color:#fff;border:none;padding:5px 12px;border-radius:var(--r-md);font-size:12px;cursor:pointer;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="install-banner" id="installBanner">
+    <span style="flex:1">Add to home screen for offline use</span>
+    <button id="installBtn">Install</button>
+    <button onclick="document.getElementById('installBanner').style.display='none'" style="background:transparent;color:var(--info-txt);border:none;cursor:pointer;font-size:18px;padding:0 4px">✕</button>
+  </div>
+</div>
+<script>
+// PWA
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').classList.add('visible');});
+document.getElementById('installBtn')?.addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById('installBanner').classList.remove('visible');});
+window.addEventListener('appinstalled',()=>document.getElementById('installBanner').classList.remove('visible'));
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+// ── QUESTION BANK ──────────────────────────────────────────────────────────
+const Q=[
+// TIER 0 — Foundational mechanics
+{tier:0,id:'nh-grain',cat:'Diffusion Creep',
+q:'In Nabarro–Herring creep, how does strain rate scale with grain size?',
+sub:'Assume stress and temperature are constant.',
+choices:['ε̇ ∝ d⁻¹','ε̇ ∝ d⁻²','ε̇ ∝ d⁻³','ε̇ is grain-size independent'],
+ans:1,
+cfb:'Volume diffusion through grain interiors drives N-H creep; the diffusion path length scales with d, giving d⁻² dependence. Halving grain size quadruples the strain rate.',
+wfb:'N-H involves volume (lattice) diffusion through grain interiors. Path length ∝ d gives ε̇ ∝ d⁻². The d⁻³ dependence belongs to Coble creep (grain boundary diffusion). d⁻¹ has no physical basis.',
+cite:'Herring, C. (1950). J. Appl. Phys. 21, 437–445.',
+tags:['diffusion creep','grain size','N-H']},
+
+{tier:0,id:'coble-vs-nh',cat:'Diffusion Creep',
+q:'Coble creep has stronger grain size sensitivity than Nabarro–Herring. What is the physical reason?',
+choices:['Lattice paths are longer in Coble creep','Grain boundary diffusion adds an extra 1/d geometric factor from boundary thickness','They actually have the same grain size dependence','Coble operates at higher temperature, amplifying the effect'],
+ans:1,
+cfb:'Coble creep scales as d⁻³. The extra d factor versus N-H (d⁻²) comes from the grain boundary geometry: flux area scales as d², but the diffusion path along a boundary of thickness δ gives an additional 1/d factor.',
+wfb:'Coble (d⁻³) > Nabarro-Herring (d⁻²) in grain size sensitivity. The extra factor comes from boundary thickness geometry, not temperature or path length.',
+cite:'Coble, R.L. (1963). J. Appl. Phys. 34, 1679–1682.',
+tags:['Coble','grain size','d⁻³']},
+
+{tier:0,id:'n3-stress',cat:'Power-Law Creep',
+q:'You double differential stress on a sample deforming by power-law creep with n=3. Strain rate increases by what factor?',
+choices:['2×','4×','8×','9×'],
+ans:2,
+cfb:'ε̇ ∝ σⁿ, so 2³ = 8. This nonlinear sensitivity is why dislocation creep dominates at high stress — a small stress increase gives a large rate increase.',
+wfb:'ε̇ ∝ σⁿ with n=3: 2³ = 8. Not 4 (n=2), not 2 (n=1, diffusion creep), not 9.',
+cite:'Weertman, J. (1955). J. Appl. Phys. 26, 1213–1217.',
+tags:['stress exponent','n=3','power-law']},
+
+{tier:0,id:'maxwell-time',cat:'Viscoelasticity',
+q:'For the mantle (η ≈ 10²¹ Pa·s, G ≈ 65 GPa), τ_M = η/G is approximately:',
+sub:'Which observation does this timescale explain?',
+choices:['~50 years — explains seismic wave speed','~500–5000 years — explains postglacial rebound','~50,000 years — explains the Wilson cycle','~5 Myr — explains plate tectonic cycles'],
+ans:1,
+cfb:'τ_M ≈ 10²¹/6.5×10¹⁰ ≈ 1.5×10¹⁰ s ≈ 500–5000 yr. Seismic waves (seconds) see the mantle as elastic; postglacial rebound (thousands of years) sees it as viscous. Same material, different timescale.',
+wfb:'τ_M = η/G ≈ 500–5000 years depending on mantle region. The key concept: this separates seismic (elastic, seconds) from geodynamic (viscous, kyr) regimes in the same rock.',
+cite:'Maxwell, J.C. (1867). Phil. Trans. R. Soc. A 157, 49–88.',
+tags:['Maxwell time','viscoelasticity','postglacial rebound']},
+
+{tier:0,id:'ashby-axes',cat:'Deformation Maps',
+q:'What are the two axes of a deformation mechanism map (Ashby map)?',
+choices:['Strain rate vs. temperature','Normalized stress (σ/G) vs. homologous temperature (T/Tₘ)','Grain size vs. differential stress','Pressure vs. temperature'],
+ans:1,
+cfb:'σ/G removes the T-dependence of elasticity; T/Tₘ removes material-specific melting differences. This makes the map universal across silicates, metals, and ceramics.',
+wfb:'Ashby maps: normalized stress σ/G on y-axis, homologous temperature T/Tₘ on x-axis. Grain size appears as a parameter within diffusion creep fields, not an axis.',
+cite:'Frost, H.J. & Ashby, M.F. (1982). Deformation Mechanism Maps. Pergamon.',
+tags:['Ashby map','normalization','mechanism fields']},
+
+{tier:0,id:'wet-dry',cat:'Olivine Rheology',
+q:'According to Hirth & Kohlstedt (2003), wet olivine is how much weaker than dry at the same P-T-stress?',
+choices:['~2× weaker','~10× weaker','~100–1000× weaker','Approximately the same'],
+ans:2,
+cfb:'Water as OH defects enhances point defect concentrations and dislocation mobility by orders of magnitude. Hirth & Kohlstedt quantified this via water fugacity fH₂O — one of the most cited results in mantle rheology.',
+wfb:'2–3 orders of magnitude weaker. Water dramatically lowers olivine viscosity, which is why mantle water content is a first-order control on planetary tectonics style.',
+cite:'Hirth, G. & Kohlstedt, D.L. (2003). In Inside the Subduction Factory, AGU Monogr. 138, 83–105.',
+tags:['olivine','wet vs dry','water fugacity','Hirth-Kohlstedt']},
+
+{tier:0,id:'gss-gsi',cat:'Mechanisms',
+q:'What fundamentally distinguishes grain-size sensitive (GSS) from grain-size insensitive (GSI) creep?',
+choices:['GSS requires dislocation glide; GSI does not','GSS strain rate depends on d; GSI strain rate is independent of d','GSS operates only at high T; GSI at low T','GSS requires confining pressure; GSI does not'],
+ans:1,
+cfb:'GSS (Nabarro-Herring, Coble, GBS): ε̇ ∝ d⁻² or d⁻³. GSI (dislocation creep): no d dependence. This distinction controls whether grain-size-reducing processes can weaken the rock permanently.',
+wfb:'The distinction is purely about grain size dependence. Both can operate at high T. The crossover is set by stress, d, and T — not by temperature alone.',
+cite:'Hirth, G. & Kohlstedt, D.L. (2003). AGU Monogr. 138, 83–105.',
+tags:['GSS','GSI','grain size','mechanisms']},
+
+{tier:0,id:'stress-tensor',cat:'Continuum Mechanics',
+q:'The stress tensor σᵢⱼ can be decomposed into two parts. What are they, and why does this matter for creep?',
+choices:['Normal and shear components — only shear drives creep','Hydrostatic (pressure) and deviatoric parts — only the deviatoric part drives creep and flow','Elastic and plastic parts — only the elastic part is recoverable','Tensile and compressive parts — they drive different slip systems'],
+ans:1,
+cfb:'σᵢⱼ = P·δᵢⱼ + σ\'ᵢⱼ. The hydrostatic part (mean stress, pressure) causes volume change. The deviatoric part σ\'ᵢⱼ has zero trace and drives shape change — it is the part that appears in all creep and flow laws.',
+wfb:'The decomposition is hydrostatic + deviatoric. Flow laws (ε̇ ∝ σⁿ) use deviatoric stress, not total stress. Pressure enters separately via the activation volume term P·V* in the Arrhenius exponent.',
+cite:'Poirier, J.-P. (1985). Creep of Crystals, Cambridge. Ch. 1.\nTurcotte & Schubert (2002). Geodynamics. Ch. 2.',
+tags:['stress tensor','deviatoric','continuum mechanics','Poirier']},
+
+// TIER 1 — Mechanistic
+{tier:1,id:'weertman-n',cat:'Dislocation Creep',
+q:'Weertman (1955) derived n=3 from first principles. Which physical argument gives the σ³ dependence?',
+choices:['Three independent slip systems must activate simultaneously','Dislocation density ∝ σ² and climb velocity ∝ σ, combining to give ε̇ ∝ σ³','n=3 is empirically fit to olivine data — no physical derivation exists','The Orowan equation predicts n=3 for all metals'],
+ans:1,
+cfb:'Weertman\'s model: dislocations glide but pile up; recovery by climb is rate-limiting. Dislocation density ρ ∝ σ² (from elastic interaction), climb velocity vc ∝ σ (linearized diffusion). Orowan: ε̇ = ρbvc ∝ σ²·σ = σ³. This is n=3 from microphysics, not curve-fitting.',
+wfb:'The derivation is physical: ρ ∝ σ² and vc ∝ σ give ε̇ ∝ σ³. Poirier (1985) notes this boils down to a geometric relation (1/r stress field of dislocations), making the result general to all climb-controlled recovery creep.',
+cite:'Weertman, J. (1955). J. Appl. Phys. 26, 1213–1217.\nPoirier (1985). Creep of Crystals, Ch. 4.',
+tags:['Weertman','n=3','dislocation climb','microphysics']},
+
+{tier:1,id:'rate-limiting',cat:'Olivine Diffusion',
+q:'Which species is rate-limiting for both diffusion creep and dislocation climb in olivine, and why?',
+choices:['Oxygen — most abundant anion','Mg — highest diffusion coefficient controls the rate','Si — slowest diffusing major species sets the rate','Fe — controls redox and point defect concentration'],
+ans:2,
+cfb:'All species must diffuse proportionally to maintain stoichiometry. Si diffuses ~3 orders of magnitude slower than Mg or O in olivine. The slowest species controls the overall rate and sets the creep activation energy. Confirmed by tracer diffusion and creep experiments (Hirth & Kohlstedt 2003, Fig. 1).',
+wfb:'The fastest diffuser does not control the rate — the slowest does, because stoichiometry must be maintained. Si is the bottleneck in olivine.',
+cite:'Hirth & Kohlstedt (2003). AGU Monogr. 138.\nDohmen et al. (2002). Phys. Chem. Minerals 29, 267.',
+tags:['Si diffusion','rate-limiting','activation energy','olivine']},
+
+{tier:1,id:'piezometer',cat:'Microstructure',
+q:'What is a recrystallized grain size piezometer and what does it let you infer from a natural rock?',
+choices:['Grain shape → finite strain magnitude','Calibrated d_rx vs σ relationship → paleostress estimation','Temperature from grain boundary curvature','In-situ grain size during deformation'],
+ans:1,
+cfb:'During dynamic recrystallization, d_rx reaches a stress-dependent steady state: d_rx = A·σ⁻ᵖ. Measuring d_rx in exhumed rocks inverts for the differential stress active during deformation. Calibrated for olivine (Van der Wal et al. 1993), quartz (Stipp & Tullis 2003), calcite.',
+wfb:'A piezometer uses the d_rx vs. σ calibration to estimate paleostress — not strain or temperature. It is one of the primary microstructural stress gauges for natural peridotites.',
+cite:'Van der Wal, D. et al. (1993). Geophys. Res. Lett. 20, 1479–1482.',
+tags:['piezometer','dynamic recrystallization','paleostress']},
+
+{tier:1,id:'peierls',cat:'Low-T Plasticity',
+q:'The Peierls mechanism dominates deformation in which Earth setting?',
+choices:['Deep ductile lower crust at high T','Subducting slabs / lower lithosphere — low T/Tₘ, high σ, high ε̇','Asthenosphere — high T, low σ','Mid-ocean ridge magma chambers'],
+ans:1,
+cfb:'The Peierls stress (lattice resistance to dislocation glide) dominates at low homologous T and high strain rates — cold, fast-deforming material like subducting slabs or the lower lithosphere. It gives exponential stress dependence on ε̇, distinct from power-law creep.',
+wfb:'Peierls dominates at low T/Tₘ and high stress. At high T (asthenosphere), thermally-activated climb and diffusion operate instead. Hansen et al. (2019) studied this in the D-DIA at APS.',
+cite:'Peierls, R. (1940). Proc. Phys. Soc. 52, 34–37.\nHansen et al. (2019). J. Geophys. Res. 124.',
+tags:['Peierls','low-T plasticity','lithosphere','slab'],
+depth:'Relevant conditions: T < 700°C, depths < 100 km, or subducting slab interiors'},
+
+{tier:1,id:'karato-wu',cat:'Mantle Rheology',
+q:'What was the key finding of Karato & Wu (1993) about mantle creep mechanisms with depth?',
+choices:['Dislocation creep dominates throughout the entire upper mantle','Dislocation creep in the lithosphere may transition to diffusion creep at depth as grain size decreases','Diffusion creep dominates everywhere below the Moho','The mantle is elastic at all geodynamic timescales'],
+ans:1,
+cfb:'Karato & Wu showed dislocation creep dominates at lithospheric stresses and grain sizes. But at depth, if grain sizes are small (near slabs, after recrystallization), diffusion creep could dominate. This grain-size-dependent mechanism transition is central to all subsequent mantle viscosity models.',
+wfb:'The mechanism depends on grain size, not depth alone. Small grain sizes (recrystallization, phase mixing) push the crossover stress higher, potentially enabling diffusion creep at depth.',
+cite:'Karato, S. & Wu, P. (1993). Rheology of the upper mantle. Science 260, 771–778.',
+tags:['Karato Wu','mantle viscosity','mechanism transition']},
+
+{tier:1,id:'olivine-slip',cat:'Crystal Physics',
+q:'Durham & Goetze (1977) identified three Burgers vectors active in olivine. What are they?',
+choices:['[100], [010], [001] — all three crystallographic axis directions','[110], [101], [011] — the face diagonal directions','[111] and its equivalents — the body diagonal','[100] only — olivine has only one active slip direction'],
+ans:0,
+cfb:'Using oriented single crystal experiments and dislocation decoration, Durham & Goetze confirmed b = [100], [010], and [001] are the only significant Burgers vectors. The active slip systems are (010)[100], (001)[100], (010)[001], and (001)[100] — with the (010)[100] system being easiest.',
+wfb:'Durham & Goetze (1977) Parts 1 and 2 confirmed three Burgers vectors: [100], [010], [001]. Shape change analysis and dislocation decoration both ruled out other directions.',
+cite:'Durham, W.B. & Goetze, C. (1977). J. Geophys. Res. 82, 5737–5753.\nDurham, W.B., Goetze, C. & Blake, B. (1977). J. Geophys. Res. 82, 5755.',
+tags:['olivine','slip systems','Burgers vector','Durham-Goetze']},
+
+{tier:1,id:'cpo-atype',cat:'CPO Fabrics',
+q:'Olivine A-type fabric: where does [100] align relative to shear flow, and under what conditions?',
+choices:['[100] perpendicular to shear; high water, high stress','[100] parallel to shear direction; dry conditions, low-moderate stress','[100] parallel to compression axis; high P, low T','[100] random; only forms during diffusion creep'],
+ans:1,
+cfb:'A-type: [100] || shear direction under dry, low-to-moderate stress. Most common CPO in suboceanic upper mantle. Since P-wave velocity is fastest along [100] in olivine, A-type fabric predicts fast seismic axes parallel to mantle flow — the key link to seismic anisotropy.',
+wfb:'A-type: [100] || shear, dry, moderate stress. B-type ([001] || shear) forms under high water and stress in subduction wedges. The distinction matters for interpreting seismic anisotropy.',
+cite:'Karato, S. et al. (2008). Annu. Rev. Earth Planet. Sci. 36, 59–95.',
+tags:['CPO','A-type fabric','seismic anisotropy','olivine LPO']},
+
+{tier:1,id:'subgrain-stress',cat:'Microstructure',
+q:'Subgrain size scales as σ⁻¹. What practical use does this have?',
+choices:['Gives the original pre-deformation grain size','Can be measured and inverted for paleostress — a microstructural stress gauge','Indicates the dominant slip system during deformation','Tracks partial melting degree in the sample'],
+ans:1,
+cfb:'Subgrain size ∝ σ⁻¹ is a direct prediction of Weertman-type models, confirmed experimentally. Measuring subgrain size by EBSD or optical microscopy gives a paleostress estimate. Dislocation density (ρ ∝ σ²) provides a complementary TEM-based estimate.',
+wfb:'Subgrain size ∝ σ⁻¹: high stress → small subgrains. This is the subgrain piezometer. It is distinct from the recrystallized grain size piezometer but complementary.',
+cite:'Poirier, J.-P. (1985). Creep of Crystals, Cambridge. Ch. 6.',
+tags:['subgrain','piezometer','paleostress','dislocation density']},
+
+{tier:1,id:'recryst-regimes',cat:'Dynamic Recrystallization',
+q:'Tullis (2002) described three dynamic recrystallization regimes with increasing temperature. What drives the transition between them?',
+choices:['Increasing grain size drives transition from bulging to migration','Increasing T increases grain boundary mobility, transitioning from bulging → subgrain rotation → grain boundary migration recrystallization','Increasing pressure suppresses all recrystallization','Higher water content switches off recrystallization'],
+ans:1,
+cfb:'Regime 1 (low T): bulging recrystallization driven by dislocation density contrasts. Regime 2 (moderate T): subgrain rotation — progressive misorientation of subgrains until they become high-angle boundaries. Regime 3 (high T): grain boundary migration dominates because boundary mobility is high. Each produces distinct microstructures readable in EBSD.',
+wfb:'The three regimes (Hirth & Tullis 1992; Tullis 2002) are temperature-controlled. Each leaves diagnostic microstructures: core-and-mantle structures (regime 1-2), equant recrystallized grains (regime 3). Tullis (2002) describes these in detail for quartz and feldspars.',
+cite:'Tullis, J. (2002). Rev. Mineral. Geochem. 51, 51–95.',
+tags:['dynamic recrystallization','microstructure','Tullis','regimes']},
+
+// TIER 2 — Advanced mechanisms
+{tier:2,id:'ddia-stress',cat:'Apparatus',
+q:'In a D-DIA experiment at APS, how is differential stress measured in situ?',
+choices:['Load cells external to the vessel measure force directly','Azimuthal variation in lattice d-spacings on the XRD Debye ring, converted via elastic moduli','Acoustic emission rate correlated to stress','Sample volume change from X-ray tomography'],
+ans:1,
+cfb:'Under deviatoric stress the normally circular Debye ring becomes elliptical. The azimuthal d-spacing variation δ(d/d₀) relates to stress through single-crystal elastic moduli (Singh et al. 1998). Gives ~20 MPa precision — the primary in-situ stress technique at APS sectors 13 and 16.',
+wfb:'External load cells cannot account for solid-medium friction. The synchrotron technique uses ring ellipticity. This is your APS measurement approach.',
+cite:'Singh, A.K. et al. (1998). J. Appl. Phys. 83, 7567.\nWeidner, D.J. et al. (2010). Rev. Sci. Instrum. 81.',
+tags:['D-DIA','synchrotron','stress measurement','XRD','APS'],
+depth:'D-DIA pressure range: 0–15 GPa = 0–450 km depth'},
+
+{tier:2,id:'composite-law',cat:'Flow Laws',
+q:'In a composite flow law (ε̇ = ε̇_disl + ε̇_diff), what controls the crossover between dominant mechanisms?',
+choices:['Fixed at 100 km depth','Crossover stress σ_c depends on grain size and T — fine grain shifts crossover to higher stress','Always at the brittle-ductile transition T','At the solidus regardless of grain size'],
+ans:1,
+cfb:'Since ε̇_diff ∝ d⁻² and ε̇_disl is grain-size independent, smaller grains push the crossover stress higher. Grain-size reduction (recrystallization, phase mixing) can flip the dominant mechanism at constant P-T — the engine behind grain-size feedback in the mantle.',
+wfb:'The crossover is not fixed by depth or T alone. It shifts with grain size. This is why grain size evolution fundamentally changes mantle rheology.',
+cite:'Hirth & Kohlstedt (2003). AGU Monogr. 138, 83–105.',
+tags:['composite flow law','mechanism crossover','grain size']},
+
+{tier:2,id:'shear-heating',cat:'Shear Localization',
+q:'What is the essential positive feedback in shear heating instability, and when does runaway occur?',
+choices:['Higher σ → more recrystallization → smaller d → weaker','Higher ε̇ → more heat → lower η (Arrhenius) → higher ε̇ at same σ; runaway when heat generation exceeds diffusive removal','More water → lower η → more fluid flow → further weakening','Higher P → less dislocation mobility → stress buildup'],
+ans:1,
+cfb:'Viscous dissipation (σ·ε̇) heats the zone; Arrhenius η drops; ε̇ increases at same σ; more heat generated. Runaway occurs when heat production rate exceeds diffusive removal. Gruntfest (1963) criterion; applied to geology by Hobbs et al. (1986). Relevant to shear zone initiation and subduction.',
+wfb:'The feedback is thermal: heat → η drops → ε̇ increases → more heat. This is distinct from grain-size weakening, though both can co-operate.',
+cite:'Gruntfest, I.J. (1963). Trans. Soc. Rheol. 7, 195–207.\nHobbs, B.E. et al. (1986). Pure Appl. Geophys. 124, 309.',
+tags:['shear heating','thermal runaway','strain localization']},
+
+{tier:2,id:'phase-mixing',cat:'Mylonites',
+q:'In polyphase experiments (olivine + pyroxene), what causes the second stress drop at γ ≈ 10–20?',
+choices:['Dynamic recrystallization reaches piezometric steady state','Phase mixing produces a microstructure that inhibits grain growth, enabling diffusion creep','The sample partially melts from viscous heating','Olivine CPO saturates and fabric stops evolving'],
+ans:1,
+cfb:'Phase mixing distributes secondary phases along grain boundaries, suppressing grain growth of the primary phase. The aggregate shifts to GSS creep at stresses where single-phase material would be in dislocation creep. This is the Bercovici & Ricard grain-damage mechanism for plate tectonics initiation.',
+wfb:'The second stress drop at γ~10–20 is due to phase mixing, not CPO saturation (which causes the first drop). Bercovici et al. (2023) compare this directly to LVT experiments at WashU.',
+cite:'Bercovici & Ricard (2012). Phys. Earth Planet. Int. 202–203, 27–55.\nBercovici et al. (2023). Geophys. J. Int. 232, 2205.',
+tags:['phase mixing','grain damage','plate tectonics','mylonite']},
+
+{tier:2,id:'lvt-advantage',cat:'Apparatus',
+q:'What is the primary experimental advantage of torsional geometry in the LVT apparatus over axial compression?',
+choices:['Higher confining pressure (>10 GPa)','Shear strains γ > 100, enabling microstructural steady states unreachable by axial compression','Lower sample preparation cost','More accurate external stress measurement'],
+ans:1,
+cfb:'Axial geometries are limited to ε ≈ 0.5. Torsion continuously shears the same volume, reaching γ > 100. This is essential for CPO saturation, dynamic recrystallization steady states, and phase mixing regimes — all requiring large accumulated strain. (Skemer et al. 2025)',
+wfb:'The LVT operates at P ≤ 3 GPa — not >10 GPa. Stress measurement is actually harder in solid-medium devices. The unique advantage is large strain access.',
+cite:'Skemer, P. et al. (2025). Rev. Sci. Instrum. 96, 023903.',
+tags:['LVT','torsion','large strain','WashU'],
+depth:'LVT pressure: 0–3 GPa = 0–100 km depth (upper mantle conditions)'},
+
+{tier:2,id:'ita-pressure',cat:'Deep Earth',
+q:'Why does pressure dramatically increase lower mantle viscosity beyond temperature scaling alone?',
+choices:['High P increases grain size, suppressing diffusion','Pressure raises the activation energy via PV* in the Arrhenius exponent, slowing diffusion exponentially','Pressure stabilizes dislocation tangles permanently','Phase transitions change the dominant mineral to a stronger one'],
+ans:1,
+cfb:'In D = D₀·exp(−(E+PV*)/RT), the PV* term grows with P and directly raises the diffusion barrier. Even modest V* of a few cm³/mol gives a large viscosity increase at >20 GPa lower mantle pressures. Ita & Cohen (1998) quantified this for MgO using first-principles.',
+wfb:'The PV* term in the Arrhenius exponent: at lower mantle P, PV* becomes comparable to E, dramatically slowing diffusion. This is why simple T extrapolation underestimates deep mantle viscosity.',
+cite:'Ita, J. & Cohen, R.E. (1998). Geophys. Res. Lett. 25, 1095–1098.',
+tags:['activation volume','lower mantle','pressure','MgO'],
+depth:'Lower mantle: >660 km, >23 GPa'},
+
+// TIER 3 — Attribution (who did what)
+{tier:3,id:'who-nh',cat:'Attribution',
+q:'Who first predicted that non-hydrostatic stress creates vacancy concentration gradients in a crystal, causing diffusion-driven strain without dislocations?',
+choices:['Herring (1950) — derived the quantitative creep law','Nabarro (1948) — first proposed the vacancy flux mechanism conceptually','Coble (1963) — showed grain boundary diffusion gives d⁻³ scaling','Weertman (1955) — developed the climb-controlled creep model'],
+ans:1,
+cfb:'Nabarro (1948) first proposed the physical mechanism: non-hydrostatic stress creates differential vacancy concentrations on differently-oriented crystal faces, driving a flux of vacancies and causing shape change. Herring (1950) then formalized this into the quantitative ε̇ ∝ σd⁻² law. The mechanism is named "Nabarro-Herring" to credit both contributions.',
+wfb:'Nabarro proposed the concept (1948); Herring derived the quantitative law (1950). Coble extended it to grain boundary diffusion (1963). Weertman addressed dislocation creep, not diffusion creep.',
+cite:'Nabarro, F.R.N. (1948). Rep. Conf. Strength Solids, Phys. Soc. London, 75–90.',
+tags:['Nabarro','attribution','diffusion creep','history']},
+
+{tier:3,id:'who-weertman',cat:'Attribution',
+q:'Weertman (1955) is credited with the first physical model of power-law creep. What was the core innovation?',
+choices:['He empirically measured n=3 in metals and fit a power law to the data','He derived n=3 from first principles by combining dislocation density scaling (ρ ∝ σ²) with diffusion-controlled climb velocity (vc ∝ σ)','He showed that grain size controls creep rate at high temperature','He discovered that water weakens silicate minerals'],
+ans:1,
+cfb:'Before Weertman, power-law creep was purely empirical. His 1955 paper derived n=3 from microphysics: sources emit dislocations that glide and pile up; head dislocations annihilate by climbing (diffusion-controlled); the combination gives ε̇ ∝ σ³. Poirier (1985) calls it "the first physical model of creep... from which nearly all other models can be derived."',
+wfb:'The innovation was the derivation from first principles — not empirical fitting. This is why Weertman (1955) is foundational: it gave a physical reason for the power-law form and n=3.',
+cite:'Weertman, J. (1955). J. Appl. Phys. 26, 1213–1217.\nPoirier (1985). Creep of Crystals, Ch. 4.',
+tags:['Weertman','attribution','n=3','first principles']},
+
+{tier:3,id:'who-durham',cat:'Attribution',
+q:'Durham & Goetze (1977) made a lasting contribution to olivine physics. What was it?',
+choices:['First measurements of olivine viscosity at mantle pressures','Systematic identification of active slip systems in oriented olivine single crystals using dislocation decoration and shape change analysis','First synthesis of wet vs dry olivine flow laws','Development of the olivine piezometer'],
+ans:1,
+cfb:'Durham & Goetze deformed 41 selectively-oriented San Carlos olivine single crystals, then used an innovative oxidation-decoration technique to image dislocation structures. They confirmed b = [100], [010], [001] are the active Burgers vectors and identified (010)[100], (001)[100], (010)[001] as the primary slip systems. Shape change analysis revealed a substantial climb contribution to strain.',
+wfb:'Their contribution was the slip system catalog via oriented single crystal experiments — not pressure measurements (those came later with D-DIA) or water effects (Hirth & Kohlstedt).',
+cite:'Durham, W.B. & Goetze, C. (1977). J. Geophys. Res. 82, 5737–5753.',
+tags:['Durham Goetze','olivine slip systems','attribution']},
+
+{tier:3,id:'who-hk',cat:'Attribution',
+q:'What is the specific contribution of Hirth & Kohlstedt (2003) that makes it the most-cited olivine rheology paper?',
+choices:['First lab deformation experiments on olivine at any conditions','Synthesis of a composite olivine flow law with explicit water fugacity dependence, showing 2–3 orders of magnitude weakening by water','Discovery that olivine deforms by dislocation creep at high stress','Development of the D-DIA apparatus for high-pressure deformation'],
+ans:1,
+cfb:'Hirth & Kohlstedt synthesized two decades of experimental data into a single composite flow law: ε̇ = A·σⁿ·d⁻ᵐ·fH₂Oʳ·exp(−(E+PV)/RT), covering both diffusion and dislocation creep regimes with explicit fH₂O. Showing wet olivine is ~100–1000× weaker than dry established the quantitative framework used in all subsequent mantle geodynamics models.',
+wfb:'The key contribution is the wet/dry composite flow law with quantified fH₂O dependence — not the first olivine experiments (Kohlstedt & Goetze 1974) nor the D-DIA (Wang et al. 2003).',
+cite:'Hirth, G. & Kohlstedt, D.L. (2003). In Inside the Subduction Factory, AGU Monogr. 138, 83–105.',
+tags:['Hirth Kohlstedt','attribution','wet dry','composite flow law']},
+
+{tier:3,id:'who-wang',cat:'Attribution',
+q:'Wang, Durham, Getting & Weidner (2003) built the D-DIA. What was the key innovation over previous solid-medium apparatus?',
+choices:['First apparatus to use synchrotron X-rays for any measurement','Addition of two independent differential rams to a DIA cubic-anvil press, enabling controlled axial strain to 15 GPa with in-situ synchrotron stress measurement','First apparatus to reach temperatures above 1000°C at high pressure','Replacement of tungsten carbide anvils with diamond'],
+ans:1,
+cfb:'The DIA cubic-anvil press already existed for hydrostatic compression. Wang et al. added two differential rams (upper and lower guide blocks) that advance independently, imposing a controlled deviatoric strain field. Combined with X-ray transparent cBN anvils and synchrotron diffraction, this enabled the first quantitative stress measurements at >4 GPa — pushing accessible rheology from 120 km to 450 km depth.',
+wfb:'The innovation was the differential rams for controlled deformation plus synchrotron stress measurement capability — not synchrotron use in general or temperature range.',
+cite:'Wang, Y. et al. (2003). Rev. Sci. Instrum. 74, 3002–3011.',
+tags:['D-DIA','Wang','apparatus','attribution']},
+
+{tier:3,id:'who-yamazaki',cat:'Attribution',
+q:'Yamazaki & Karato (2001) developed the RDA. What was novel about their approach versus D-DIA?',
+choices:['They used gas medium instead of solid medium for better stress accuracy','They modified a Drickamer opposed-anvil device with a rotation actuator, enabling torsion and large shear strains at 15 GPa','They added synchrotron capability to the Griggs apparatus','They developed the first multi-anvil press capable of >10 GPa'],
+ans:1,
+cfb:'The RDA modification of the Drickamer apparatus added a DC servomotor + gearbox rotation actuator, imposing torsion (simple shear in any radial plane) on thin disk samples (≤0.8 mm thick, ≤4 mm diameter). This enabled large shear strains at transition zone pressures. The LVT at WashU is conceptually based on the RDA but with much larger sample volume.',
+wfb:'The RDA innovation was torsion capability at high pressure — enabling large strain at transition zone conditions. The LVT is the large-volume version of this concept.',
+cite:'Yamazaki, D. & Karato, S. (2001). Rev. Sci. Instrum. 72, 4207–4211.',
+tags:['RDA','Yamazaki Karato','torsion','attribution'],
+depth:'RDA pressure range: 0–15 GPa = 0–450 km; torsion enables γ > 6 at these conditions'},
+
+{tier:3,id:'who-ito',cat:'Attribution',
+q:'What did Ito & Takahashi (1989) establish about the 660 km seismic discontinuity?',
+choices:['They showed it is a chemical boundary between pyrolite and eclogite compositions','They measured the ringwoodite → bridgmanite + ferropericlase transition occurs at 23–24 GPa with a negative Clapeyron slope, sharp enough (<0.15 GPa) to explain the seismic reflectivity','They discovered that the discontinuity is caused by partial melting','They showed the 660 discontinuity has a positive Clapeyron slope, allowing cold slabs to penetrate'],
+ans:1,
+cfb:'Ito & Takahashi experimentally determined the post-spinel transition (ringwoodite → MgSiO₃ perovskite + MgO periclase) at 23–24 GPa (~660 km depth). The negative Clapeyron slope (dP/dT ≈ −0.003 GPa/°C) means cold slabs encounter this transition at greater depth — potentially inhibiting penetration into the lower mantle. The transition width (<0.15 GPa, <4 km) explains why the 660 is seismically sharp.',
+wfb:'The key findings are: (1) the transition matches 660 km depth, (2) negative Clapeyron slope has convection implications, (3) the transition is sharp enough to be seismically reflective.',
+cite:'Ito, E. & Takahashi, E. (1989). J. Geophys. Res. 94, 10637–10646.',
+tags:['Ito Takahashi','660 km','ringwoodite','attribution'],
+depth:'660 km discontinuity: ~23 GPa, ringwoodite → bridgmanite + ferropericlase'},
+
+{tier:3,id:'who-bercovici',cat:'Attribution',
+q:'What is the central argument of Bercovici & Ricard (2012) for how plate tectonics is generated?',
+choices:['Thermal convection alone is sufficient to produce plates without any weakening mechanism','Phase mixing in polyphase rocks reduces grain size, enabling grain-size-sensitive creep and permanent weakening that persists after deformation stops — providing the "memory" needed for plate boundaries','Slab pull is the dominant force and no grain-scale weakening is required','Melt weakening at mid-ocean ridges initiates all plate boundaries'],
+ans:1,
+cfb:'The problem: single-phase rocks regain strength when stress drops. Bercovici & Ricard showed that in two-phase aggregates (olivine + pyroxene), phase mixing pins grain boundaries, suppressing grain growth and maintaining low viscosity even after deformation ceases. This "grain damage" mechanism provides the long-term memory that allows dormant plate boundaries to be reactivated — essential for Earth-like tectonics.',
+wfb:'The key innovation is the grain damage + phase mixing mechanism that gives plate boundaries persistence (memory). Pure thermal convection or slab pull alone cannot explain dormant boundary reactivation.',
+cite:'Bercovici, D. & Ricard, Y. (2012). Phys. Earth Planet. Int. 202–203, 27–55.',
+tags:['Bercovici Ricard','grain damage','plate tectonics','attribution']},
+
+{tier:3,id:'who-skemer',cat:'Attribution',
+q:'Skemer et al. (2025) describes the LVT apparatus at WashU. What distinguishes LVT2 from LVT1?',
+choices:['LVT2 operates at higher pressure (10 GPa vs 3 GPa)','LVT2 adds a torque transducer that senses only shear of the sample assembly, plus servo-controlled hydraulics — improving rheological measurement capability','LVT2 uses diamond anvils instead of tungsten carbide','LVT2 is designed for synchrotron use at APS'],
+ans:1,
+cfb:'LVT1 (2013) is the original solid-medium torsion device. LVT2 (2020) adds a torque transducer (f) that measures only the torsional component from the sample — not friction from the pressure medium — plus servo-controlled hydraulics (g) for more precise strain rate control. Both operate at P ≤ 3 GPa, T ≤ 1800 K.',
+wfb:'Both LVTs operate at the same pressure range (≤3 GPa). LVT2\'s key addition is the torque transducer for rheological measurement, not a pressure or anvil change.',
+cite:'Skemer, P. et al. (2025). Rev. Sci. Instrum. 96, 023903. doi:10.1063/5.0221218',
+tags:['LVT','Skemer','WashU','attribution']},
+
+// TIER 4 — Depth and apparatus intuition
+{tier:4,id:'depth-griggs',cat:'Apparatus & Depth',
+q:'The Griggs apparatus reaches ~4 GPa maximum. What depth does this correspond to, and what is the dominant olivine mineral phase there?',
+choices:['~50 km — still in the lower crust where plagioclase is stable','~120 km — upper lithospheric mantle, olivine α-phase (forsterite structure) is stable','~410 km — the olivine-wadsleyite transition','~660 km — the ringwoodite-bridgmanite transition'],
+ans:1,
+cfb:'4 GPa ÷ 0.033 GPa/km ≈ 120 km depth. This is upper lithospheric mantle — well above the 410 km olivine→wadsleyite transition at ~14 GPa. The α-phase olivine (orthorhombic, Pbnm space group, Mg₂SiO₄) is stable here. The Griggs apparatus is therefore limited to shallow upper mantle conditions, which is why >90% of Earth\'s mantle rheology was unexplored before the D-DIA (Wang et al. 2003).',
+wfb:'1 GPa ≈ 33 km. So 4 GPa ≈ 120 km. That is upper mantle, olivine α-phase territory. The 410 km discontinuity (olivine→wadsleyite) requires ~14 GPa — far beyond the Griggs range.',
+cite:'Wang et al. (2003). Rev. Sci. Instrum. 74, 3002 — explicitly states Griggs maximum is 4 GPa ≈ 120 km.',
+tags:['Griggs','depth intuition','olivine α-phase','apparatus'],
+depth:'Griggs: 0–4 GPa = 0–120 km. Olivine stable throughout.'},
+
+{tier:4,id:'depth-410',cat:'Phase Transitions & Depth',
+q:'The 410 km discontinuity is caused by a phase transition at ~14 GPa. What is the transition, and what is its seismic and rheological significance?',
+choices:['Pyroxene → garnet — causes a density jump but no change in dominant deformation mechanism','Olivine α-phase → wadsleyite β-phase — positive Clapeyron slope, density increase of ~8%, marks the top of the transition zone','Wadsleyite → ringwoodite — the mid-transition zone boundary','Ringwoodite → bridgmanite + ferropericlase — negative Clapeyron slope, marks the 660'],
+ans:1,
+cfb:'Olivine (α, orthorhombic) → wadsleyite (β, monoclinic) at ~14 GPa, ~410 km. Density increases ~8%. The positive Clapeyron slope (dP/dT > 0) means hot upwellings encounter the transition shallower — enhancing buoyancy and aiding plume ascent. The transition zone (410–660 km) is dominated by wadsleyite then ringwoodite, both of which can store significant water.',
+wfb:'The 410 is the olivine→wadsleyite transition (~14 GPa). The 660 is ringwoodite→bridgmanite + ferropericlase (~23 GPa). Both are olivine-system transitions in a pyrolite mantle.',
+cite:'Stixrude & Lithgow-Bertelloni (2011). Geophys. J. Int. 184, 1180–1213.\nIto & Takahashi (1989). J. Geophys. Res. 94, 10637.',
+tags:['410 km','wadsleyite','phase transition','Clapeyron slope'],
+depth:'14 GPa = 410 km; positive Clapeyron slope'},
+
+{tier:4,id:'depth-660',cat:'Phase Transitions & Depth',
+q:'The 660 km discontinuity at ~23 GPa has a negative Clapeyron slope. What does this mean for subducting slab dynamics?',
+choices:['Negative slope means slabs cross the boundary at shallower depth — aiding penetration into the lower mantle','Negative slope means cold slabs encounter the transition at greater pressure — the phase boundary deflects downward under a cold slab, creating a density excess that inhibits slab penetration','The slope sign is irrelevant to slab dynamics','Negative slope means the transition occurs at lower temperature in cold slabs, making it occur shallower'],
+ans:1,
+cfb:'A negative Clapeyron slope (dP/dT < 0) means the phase boundary lies at higher pressure (deeper) under cold material. A cold subducting slab depresses the 660 boundary downward, creating a region where denser ringwoodite persists below the equilibrium depth — a buoyancy force opposing slab descent. This is why the 660 is thought to impede (though not completely prevent) whole-mantle convection.',
+wfb:'Negative slope = boundary is deeper under cold material. Cold slab depresses the 660 → buoyancy force resisting penetration. This is the mechanism behind "slab stagnation" in the transition zone.',
+cite:'Ito & Takahashi (1989). J. Geophys. Res. 94, 10637–10646.',
+tags:['660 km','negative Clapeyron','slab dynamics','bridgmanite'],
+depth:'23 GPa = 660 km; ringwoodite → bridgmanite + ferropericlase'},
+
+{tier:4,id:'depth-ddia',cat:'Apparatus & Depth',
+q:'The D-DIA reaches 15 GPa. What is the maximum depth accessible, and what mineral assemblage is present there?',
+choices:['~200 km — deep upper mantle, olivine + orthopyroxene + garnet','~450 km — transition zone, wadsleyite dominates in a pyrolite composition','~660 km — the 660 discontinuity, ringwoodite → bridgmanite transition','~1000 km — lower mantle, bridgmanite dominant'],
+ans:1,
+cfb:'15 GPa ÷ 0.033 GPa/km ≈ 450 km. This is in the transition zone, above the 660 km discontinuity (~23 GPa). At 450 km in a pyrolite composition, wadsleyite (β-Mg₂SiO₄) dominates, with minor garnet (majorite) and Ca-perovskite (Stixrude & Lithgow-Bertelloni 2011 Fig. 17). This is exactly why the D-DIA was transformative — it pushed accessible rheology through the 410 km discontinuity into the transition zone.',
+wfb:'15 GPa ÷ 33 MPa/km ≈ 450 km. The 410 discontinuity is at ~14 GPa, so 15 GPa is just inside the transition zone where wadsleyite is stable.',
+cite:'Wang et al. (2003). Rev. Sci. Instrum. 74, 3002–3011.\nStixrude & Lithgow-Bertelloni (2011). GJI 184.',
+tags:['D-DIA','depth','wadsleyite','transition zone'],
+depth:'D-DIA: up to 15 GPa = 450 km, mid-transition zone'},
+
+{tier:4,id:'depth-rda',cat:'Apparatus & Depth',
+q:'The RDA (Yamazaki & Karato 2001) reaches 15 GPa in torsion geometry, and has been extended further. Why is the torsion geometry specifically valuable at these depths?',
+choices:['It allows larger specimen volumes than axial geometries at equivalent pressure','It enables large shear strains (γ >> 1) needed to study CPO development, grain size evolution, and phase mixing at transition zone conditions — impossible in axial compression','It provides more accurate stress measurement than D-DIA at the same pressure','It is required for synchrotron X-ray diffraction to work at high pressure'],
+ans:1,
+cfb:'At transition zone conditions (410–660 km, 14–23 GPa), microstructures like CPO, dynamic recrystallization, and phase mixing require large strains to reach steady state. Axial compression is limited to ε ≈ 0.5. The RDA\'s torsion geometry allows γ >> 1 at these pressures, enabling study of fabric development and weakening mechanisms relevant to deep mantle dynamics.',
+wfb:'The RDA\'s key advantage at high pressure is large strain access in torsion — not specimen size (actually smaller than LVT or D-DIA), stress accuracy, or synchrotron compatibility.',
+cite:'Yamazaki & Karato (2001). Rev. Sci. Instrum. 72, 4207–4211.',
+tags:['RDA','torsion','transition zone','large strain'],
+depth:'RDA: 0–15 GPa = 0–450 km, torsion geometry'},
+
+{tier:4,id:'depth-lower-mantle',cat:'Phase Transitions & Depth',
+q:'Below 660 km, bridgmanite (MgSiO₃ perovskite) dominates the lower mantle. What is its rheological significance compared to the transition zone minerals?',
+choices:['Bridgmanite is weaker than ringwoodite so the lower mantle flows easily','Almost no experimental rheology exists for bridgmanite at relevant P-T — it is outside the reach of D-DIA and RDA, meaning >90% of mantle rheology is poorly constrained','Bridgmanite has been extensively studied because it is the most abundant mineral on Earth','Bridgmanite has the same rheology as olivine so upper mantle flow laws apply'],
+ans:1,
+cfb:'Bridgmanite requires >23 GPa to synthesize and study. This is beyond the D-DIA (15 GPa) and RDA (15 GPa) ranges. Multi-anvil presses and diamond anvil cells can reach these pressures but lack controlled deformation capability or sample volume for microstructural work. Wang et al. (2003) noted this explicitly: "rheological properties of more than 90% of Earth\'s mantle remain unexplored." Ita & Cohen (1998) used first-principles to fill this gap for MgO.',
+wfb:'This is a genuine frontier. Bridgmanite rheology at lower mantle conditions is poorly constrained experimentally, which is why first-principles (Ita & Cohen) and seismic inference dominate our understanding of lower mantle viscosity.',
+cite:'Wang et al. (2003). Rev. Sci. Instrum. 74, 3002.\nIta & Cohen (1998). Geophys. Res. Lett. 25, 1095.',
+tags:['bridgmanite','lower mantle','experimental frontier'],
+depth:'>660 km = >23 GPa; beyond current quantitative deformation apparatus'}
+];
+
+const TIER_LABELS=['Foundational','Mechanistic','Advanced','Attribution','Depth & Apparatus'];
+const ALL_CATS=[...new Set(Q.map(q=>q.cat))].sort();
+const FILTERS=['All',...TIER_LABELS];
+
+let state={
+  filter:'All',queue:[],qIdx:0,
+  answered:false,selected:null,
+  score:0,total:0,history:[],showResults:false
+};
+
+function buildQueue(){
+  let pool;
+  if(TIER_LABELS.includes(state.filter)){
+    pool=Q.filter(q=>TIER_LABELS[q.tier]===state.filter);
+  } else {
+    pool=[...Q];
+  }
+  // Shuffle
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  state.queue=pool;state.qIdx=0;state.answered=false;state.selected=null;
+  state.score=0;state.total=0;state.history=[];state.showResults=false;
+}
+
+function curQ(){return state.queue[state.qIdx]||null;}
+
+function selectAnswer(idx){
+  if(state.answered)return;
+  state.selected=idx;state.answered=true;
+  const q=curQ();
+  const correct=(idx===q.ans);
+  state.history.push(correct?'hit':'miss');
+  if(correct)state.score++;
+  state.total++;
+  render();
+}
+
+function next(){
+  state.qIdx++;state.answered=false;state.selected=null;
+  if(state.qIdx>=state.queue.length)state.showResults=true;
+  render();
+}
+
+function restart(){buildQueue();render();}
+function setFilter(f){state.filter=f;buildQueue();render();}
+
+function grade(pct){
+  if(pct>=90)return'Excellent';if(pct>=75)return'Good';
+  if(pct>=60)return'Getting there';return'Keep drilling';
+}
+
+function renderResults(){
+  const pct=Math.round(state.score/state.total*100);
+  const circ=2*Math.PI*38;const dash=circ*(pct/100);
+  const app=document.getElementById('app');
+  app.innerHTML=`<div class="install-banner" id="installBanner"></div>
+    <div class="results">
+      <div class="results-ring">
+        <svg viewBox="0 0 110 110">
+          <circle cx="55" cy="55" r="38" fill="none" stroke="var(--bg3)" stroke-width="8"/>
+          <circle cx="55" cy="55" r="38" fill="none" stroke="var(--correct-border)" stroke-width="8"
+            stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}"
+            stroke-linecap="round" transform="rotate(-90 55 55)"/>
+        </svg>
+        <div class="results-pct">${pct}%</div>
+      </div>
+      <div class="results-grade">${grade(pct)}</div>
+      <div class="results-label">${state.score} of ${state.total} correct · ${state.filter}</div>
+      <div class="results-stats">
+        <div class="rstat"><div class="rstat-val">${state.total}</div><div class="rstat-lbl">questions</div></div>
+        <div class="rstat"><div class="rstat-val">${state.score}</div><div class="rstat-lbl">correct</div></div>
+        <div class="rstat"><div class="rstat-val">${state.total-state.score}</div><div class="rstat-lbl">missed</div></div>
+      </div>
+      <div class="streak-bar">${state.history.map(h=>`<div class="streak-dot ${h}"></div>`).join('')}</div>
+      <div class="results-btns">
+        <button class="btn primary" onclick="restart()">Try again (reshuffled)</button>
+        <button class="btn info" onclick="window.open('https://claude.ai/new?q='+encodeURIComponent('I just finished a rheology quiz (${state.filter} tier). Give me a focused 3-min review on what I need to reinforce.'),'_blank')">↗ Get a focused review</button>
+      </div>
+    </div>`;
+}
+
+function render(){
+  if(state.showResults){renderResults();return;}
+  const q=curQ();if(!q){renderResults();return;}
+  const app=document.getElementById('app');
+  const pct=state.queue.length>0?Math.round(state.qIdx/state.queue.length*100):0;
+
+  const choicesHTML=q.choices.map((c,i)=>{
+    let cls='choice';
+    if(state.answered){
+      if(i===q.ans)cls+=' correct';
+      else if(i===state.selected&&i!==q.ans)cls+=' wrong';
+      else cls+=' dimmed';
+    }
+    return `<button class="${cls}" onclick="selectAnswer(${i})" ${state.answered?'disabled':''}>${c}</button>`;
+  }).join('');
+
+  let fbHTML='';
+  if(state.answered){
+    const correct=state.selected===q.ans;
+    fbHTML=`<div class="feedback ${correct?'correct':'wrong'}">
+      <div class="fb-head ${correct?'c':'w'}">${correct?'✓ Correct':'✗ Not quite'}</div>
+      <div class="fb-txt">${correct?q.cfb:q.wfb}</div>
+      <div class="citation">${q.cite}</div>
+    </div>`;
+  }
+
+  const depthHTML=q.depth?`<div class="depth-tag">🌍 ${q.depth}</div>`:'';
+
+  app.innerHTML=`
+    <div class="install-banner" id="installBanner"></div>
+    <div class="top-row">
+      <span class="app-label">Rheology quiz</span>
+      <span class="score-pill">${state.score}/${state.total}</span>
+    </div>
+    <div class="filter-scroll">
+      ${FILTERS.map(f=>`<button class="filter-btn${state.filter===f?' active':''}" onclick="setFilter('${f}')">${f}</button>`).join('')}
+    </div>
+    <div class="progress-row">
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <span class="prog-label">${state.qIdx+1}/${state.queue.length}</span>
+    </div>
+    <div class="qcard">
+      <span class="tier-badge tier-${q.tier}">${TIER_LABELS[q.tier]} · ${q.cat}</span>
+      <div class="qnum">Question ${state.qIdx+1} of ${state.queue.length}</div>
+      <div class="qtext">${q.q}</div>
+      ${q.sub?`<div class="qsub">${q.sub}</div>`:''}
+      ${depthHTML}
+    </div>
+    <div class="choices">${choicesHTML}</div>
+    ${fbHTML}
+    ${state.answered?`
+      <div class="tag-row">${q.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <div class="action-row" style="margin-top:10px;">
+        ${state.qIdx+1<state.queue.length
+          ?`<button class="btn primary" onclick="next()">Next →</button>`
+          :`<button class="btn primary" onclick="next()">See results</button>`}
+        <button class="btn info" onclick="window.open('https://claude.ai/new?q='+encodeURIComponent('Go deeper on: ${q.tags[0]} — ${q.q}'),'_blank')">↗ Go deeper</button>
+      </div>
+    `:''}
+  `;
+}
+
+buildQueue();render();
+</script>
+</body>
+</html>
