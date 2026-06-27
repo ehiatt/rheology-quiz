@@ -842,16 +842,34 @@ tags:['Griggs apparatus','Paterson apparatus','confining medium','stress resolut
 ];
 
 const TIER_LABELS=['Foundational','Mechanistic','Advanced','Attribution','Depth & Apparatus'];
-const FILTERS=['All',...TIER_LABELS];
+const TIER_FILTERS=['All',...TIER_LABELS];
+const CATS=['All',...[...new Set(Q.map(q=>q.cat))].sort()];
+const DAILY_N=10,RANDOM_N=12;
 
-let state={filter:'All',queue:[],qIdx:0,answered:false,selected:null,score:0,total:0,history:[],showResults:false};
+/* ---- persistent progress (localStorage) ---- */
+const SKEY='rq_progress_v1';
+function blankStats(){return{lifetime:{answered:0,correct:0},perQ:{},daily:{last:null,streak:0,best:0}};}
+function loadStats(){try{return JSON.parse(localStorage.getItem(SKEY))||blankStats();}catch(e){return blankStats();}}
+function saveStats(){try{localStorage.setItem(SKEY,JSON.stringify(stats));}catch(e){}}
+let stats=loadStats();
+function missedIds(){return Q.filter(q=>stats.perQ[q.id]&&stats.perQ[q.id].missed);}
 
-function buildQueue(){
-  let pool=state.filter==='All'?[...Q]:Q.filter(q=>TIER_LABELS[q.tier]===state.filter);
-  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-  state.queue=pool;state.qIdx=0;state.answered=false;state.selected=null;state.score=0;state.total=0;state.history=[];state.showResults=false;
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function daysBetween(a,b){return Math.round((new Date(b+'T00:00')-new Date(a+'T00:00'))/86400000);}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+/* deterministic daily pick — same set all day, different each day */
+function seededPick(arr,n,seed){let s=2166136261;for(let k=0;k<seed.length;k++)s=(s^seed.charCodeAt(k))*16777619>>>0;const a=[...arr];for(let i=a.length-1;i>0;i--){s=(s*1103515245+12345)>>>0;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]];}return a.slice(0,Math.min(n,a.length));}
+
+let state={mode:'practice',tier:'All',cat:'All',queue:[],qIdx:0,answered:false,selected:null,score:0,total:0,history:[],showResults:false};
+
+function poolFor(){
+  if(state.mode==='daily')return seededPick(Q,DAILY_N,todayStr());
+  if(state.mode==='random')return shuffle(Q).slice(0,RANDOM_N);
+  if(state.mode==='review')return shuffle(missedIds());
+  let pool=Q.filter(q=>(state.tier==='All'||TIER_LABELS[q.tier]===state.tier)&&(state.cat==='All'||q.cat===state.cat));
+  return shuffle(pool);
 }
-
+function buildQueue(){state.queue=poolFor();state.qIdx=0;state.answered=false;state.selected=null;state.score=0;state.total=0;state.history=[];state.showResults=false;}
 function curQ(){return state.queue[state.qIdx]||null;}
 
 function selectAnswer(idx){
@@ -859,21 +877,58 @@ function selectAnswer(idx){
   state.selected=idx;state.answered=true;
   const q=curQ();const correct=(idx===q.ans);
   state.history.push(correct?'hit':'miss');
-  if(correct)state.score++;state.total++;render();
+  if(correct)state.score++;state.total++;
+  const pq=stats.perQ[q.id]||(stats.perQ[q.id]={seen:0,correct:0,missed:false});
+  pq.seen++;if(correct){pq.correct++;pq.missed=false;}else{pq.missed=true;}
+  stats.lifetime.answered++;if(correct)stats.lifetime.correct++;
+  saveStats();render();
 }
 
 function next(){
   state.qIdx++;state.answered=false;state.selected=null;
-  if(state.qIdx>=state.queue.length)state.showResults=true;render();
+  if(state.qIdx>=state.queue.length){finishSession();state.showResults=true;}render();
+}
+function finishSession(){
+  if(state.mode==='daily'&&state.total>0){
+    const t=todayStr();
+    if(stats.daily.last!==t){
+      if(stats.daily.last&&daysBetween(stats.daily.last,t)===1)stats.daily.streak++;else stats.daily.streak=1;
+      stats.daily.last=t;
+      if(stats.daily.streak>stats.daily.best)stats.daily.best=stats.daily.streak;
+      saveStats();
+    }
+  }
 }
 
 function restart(){buildQueue();render();}
-function setFilter(f){state.filter=f;buildQueue();render();}
+function setMode(m){state.mode=m;buildQueue();render();}
+function setTier(f){state.tier=f;state.mode='practice';buildQueue();render();}
+function setCat(c){state.cat=c;state.mode='practice';buildQueue();render();}
 function grade(p){return p>=90?'Excellent':p>=75?'Good':p>=60?'Getting there':'Keep drilling';}
+function resetProgress(){if(confirm('Reset all saved progress, missed list, and streak?')){stats=blankStats();saveStats();buildQueue();render();}}
+function scopeLabel(){return state.mode==='practice'?(state.cat!=='All'?state.cat:state.tier):state.mode.charAt(0).toUpperCase()+state.mode.slice(1);}
+
+function controlsHTML(){
+  const lifeAcc=stats.lifetime.answered?Math.round(stats.lifetime.correct/stats.lifetime.answered*100):0;
+  const mc=missedIds().length;
+  const modes=[['practice','Practice'],['daily','Daily'],['review','Review'+(mc?' ('+mc+')':'')],['random','Random']];
+  const modeRow=`<div class="filter-scroll">${modes.map(([m,l])=>`<button class="filter-btn${state.mode===m?' active':''}" onclick="setMode('${m}')">${l}</button>`).join('')}</div>`;
+  let sub='';
+  if(state.mode==='practice'){
+    sub=`<div class="filter-scroll">${TIER_FILTERS.map(f=>`<button class="filter-btn${state.tier===f?' active':''}" onclick="setTier('${f}')">${f}</button>`).join('')}</div>`+
+    `<div class="filter-scroll"><select onchange="setCat(this.value)" style="background:var(--bg3);color:var(--txt);border:1px solid var(--bg3);border-radius:14px;padding:5px 10px;font-size:12px;max-width:100%;">${CATS.map(c=>`<option ${state.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>`;
+  }else if(state.mode==='daily'){
+    sub=`<div class="prog-label" style="padding:2px 2px 4px;">🔥 ${stats.daily.streak}-day streak${stats.daily.best>stats.daily.streak?' · best '+stats.daily.best:''} · today’s ${DAILY_N} questions${stats.daily.last===todayStr()?' ✓ done':''}</div>`;
+  }
+  const pill=`<span class="score-pill" title="lifetime accuracy / day streak">${lifeAcc}% · 🔥${stats.daily.streak}</span>`;
+  return`<div class="top-row"><span class="app-label">Rheology quiz</span>${pill}</div>${modeRow}${sub}`;
+}
 
 function renderResults(){
-  const pct=Math.round(state.score/state.total*100);
+  const pct=state.total?Math.round(state.score/state.total*100):0;
   const circ=2*Math.PI*38,dash=circ*(pct/100);
+  const mc=missedIds().length;
+  const lifeAcc=stats.lifetime.answered?Math.round(stats.lifetime.correct/stats.lifetime.answered*100):0;
   document.getElementById('app').innerHTML=`<div class="results">
     <div class="results-ring"><svg viewBox="0 0 110 110">
       <circle cx="55" cy="55" r="38" fill="none" stroke="var(--bg3)" stroke-width="8"/>
@@ -881,23 +936,29 @@ function renderResults(){
         stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 55 55)"/>
     </svg><div class="results-pct">${pct}%</div></div>
     <div class="results-grade">${grade(pct)}</div>
-    <div class="results-label">${state.score}/${state.total} · ${state.filter}</div>
+    <div class="results-label">${state.score}/${state.total} · ${scopeLabel()}${state.mode==='daily'?' · 🔥'+stats.daily.streak+'-day streak':''}</div>
     <div class="results-stats">
       <div class="rstat"><div class="rstat-val">${state.total}</div><div class="rstat-lbl">questions</div></div>
       <div class="rstat"><div class="rstat-val">${state.score}</div><div class="rstat-lbl">correct</div></div>
-      <div class="rstat"><div class="rstat-val">${state.total-state.score}</div><div class="rstat-lbl">missed</div></div>
+      <div class="rstat"><div class="rstat-val">${lifeAcc}%</div><div class="rstat-lbl">lifetime</div></div>
     </div>
     <div class="streak-bar">${state.history.map(h=>`<div class="streak-dot ${h}"></div>`).join('')}</div>
     <div class="results-btns">
       <button class="btn primary" onclick="restart()">Try again (reshuffled)</button>
-      <button class="btn info" onclick="window.open('https://claude.ai/new?q='+encodeURIComponent('I finished the rheology quiz (${state.filter} tier, ${pct}%). Give me a targeted 3-min review of concepts I need to reinforce.'),'_blank')">↗ Get a focused review</button>
-    </div></div>`;
+      ${mc?`<button class="btn info" onclick="setMode('review')">Drill ${mc} missed →</button>`:''}
+      <button class="btn info" onclick="window.open('https://claude.ai/new?q='+encodeURIComponent('I finished the rheology quiz (${scopeLabel()}, ${pct}%). Give me a targeted 3-min review of concepts I need to reinforce.'),'_blank')">↗ Get a focused review</button>
+    </div>
+    <div style="text-align:center;margin-top:12px;"><a href="#" onclick="resetProgress();return false;" style="color:var(--muted,#8aa);font-size:11px;text-decoration:underline;">reset progress</a></div></div>`;
 }
 
 function render(){
   if(state.showResults){renderResults();return;}
-  const q=curQ();if(!q){renderResults();return;}
   const app=document.getElementById('app');
+  if(state.queue.length===0){
+    const msg=state.mode==='review'?'No missed questions yet. Answer some in Practice, Daily, or Random — the ones you miss collect here to re-drill.':'No questions match this filter. Pick another tier or category.';
+    app.innerHTML=`${controlsHTML()}<div class="qcard"><div class="qtext" style="font-weight:400;">${msg}</div></div>`;return;
+  }
+  const q=curQ();if(!q){renderResults();return;}
   const pct=state.queue.length>0?Math.round(state.qIdx/state.queue.length*100):0;
   const choicesHTML=q.choices.map((c,i)=>{
     let cls='choice';
@@ -910,8 +971,7 @@ function render(){
     <div class="citation">${q.cite}</div></div>`:'';
   const depthHTML=q.depth?`<div class="depth-tag">🌍 ${q.depth}</div>`:'';
   app.innerHTML=`
-    <div class="top-row"><span class="app-label">Rheology quiz</span><span class="score-pill">${state.score}/${state.total}</span></div>
-    <div class="filter-scroll">${FILTERS.map(f=>`<button class="filter-btn${state.filter===f?' active':''}" onclick="setFilter('${f}')">${f}</button>`).join('')}</div>
+    ${controlsHTML()}
     <div class="progress-row"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div><span class="prog-label">${state.qIdx+1}/${state.queue.length}</span></div>
     <div class="qcard"><span class="tier-badge tier-${q.tier}">${TIER_LABELS[q.tier]} · ${q.cat}</span>
       <div class="qnum">Q${state.qIdx+1} of ${state.queue.length}</div>
