@@ -848,7 +848,7 @@ const DAILY_N=10,RANDOM_N=12;
 
 /* ---- persistent progress (localStorage) ---- */
 const SKEY='rq_progress_v1';
-function blankStats(){return{lifetime:{answered:0,correct:0},perQ:{},daily:{last:null,streak:0,best:0}};}
+function blankStats(){return{lifetime:{answered:0,correct:0},perQ:{},daily:{last:null,streak:0,best:0},skipped:{}};}
 function loadStats(){try{return JSON.parse(localStorage.getItem(SKEY))||blankStats();}catch(e){return blankStats();}}
 function saveStats(){try{localStorage.setItem(SKEY,JSON.stringify(stats));}catch(e){}}
 let stats=loadStats();
@@ -900,6 +900,15 @@ function finishSession(){
   }
 }
 
+function skip(){
+  if(state.answered)return;
+  const q=state.queue[state.qIdx];if(!q)return;
+  if(!stats.skipped)stats.skipped={};stats.skipped[q.id]=true;saveStats();
+  state.queue.splice(state.qIdx,1);state.queue.push(q);   /* send to the back of the queue */
+  state.answered=false;state.selected=null;
+  if(state.qIdx>=state.queue.length)state.qIdx=0;
+  render();
+}
 function restart(){buildQueue();render();}
 function setMode(m){state.mode=m;buildQueue();render();}
 function setTier(f){state.tier=f;state.mode='practice';buildQueue();render();}
@@ -982,7 +991,7 @@ function render(){
     <div class="qcard"><span class="tier-badge tier-${q.tier}">${TIER_LABELS[q.tier]} · ${q.cat}</span>
       <div class="qnum">Q${state.qIdx+1} of ${state.queue.length}</div>
       <div class="qtext">${q.q}</div>${q.sub?`<div class="qsub">${q.sub}</div>`:''}${depthHTML}</div>
-    <div class="choices">${choicesHTML}</div>${fbHTML}
+    <div class="choices">${choicesHTML}</div>${!state.answered?`<div style="text-align:center;margin-top:10px;"><button onclick="skip()" style="background:transparent;border:none;color:var(--muted,#88a);font-size:12px;cursor:pointer;text-decoration:underline;">Skip for later ⏭</button></div>`:''}${fbHTML}
     ${state.answered?`<div class="tag-row">${q.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
     <div class="action-row" style="margin-top:9px;">
       ${state.qIdx+1<state.queue.length?`<button class="btn primary" onclick="next()">Next →</button>`:`<button class="btn primary" onclick="next()">Results</button>`}
