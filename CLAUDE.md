@@ -52,15 +52,26 @@ Live PWA on GitHub Pages: **https://ehiatt.github.io/rheology_quiz/** (URL chang
 with the repo rename — the old `rheology-quiz` URL is dead; reinstall the phone PWA
 from the new one). Registered in `proj` as `rheology_quiz`.
 
-**Question bank = 70.** Set 1 (11) + Set 2 (11) authored, 3-model crosscheck-passed
-(Claude+GPT+Gemini), and deployed; one dup-concept question pulled post-deploy.
+**Question bank = 90.** Set 1 (11) + Set 2 (11) + Basics (20) authored, 3-model
+crosscheck-passed (Claude+GPT+Gemini), and deployed; one dup-concept question pulled.
+The Basics set (tier 0, cat:'Basics') is the bottom of the learning ladder.
 
-**App features shipped 2026-06-27:** localStorage persistence (score, day-streak,
-per-question seen/missed); modes Practice / Daily (deterministic 10/day + streak) /
-Review (drill missed) / Random; tier **and** category filters; lifetime-accuracy
-pill; SW cache versioning (v3). "Go deeper" is incognito-friendly — copies the
-prompt + opens a BLANK claude.ai chat (claude.ai incognito is UI-only; no URL param),
-so it works on the phone PWA.
+**App features shipped 2026-06-27 (SW cache now v6):** localStorage persistence
+(score, day-streak, per-question seen/missed/skipped, Learn progress); modes
+**Learn** / Practice / Daily (deterministic 10/day + streak) / Review (drill missed)
+/ Random; tier **and** category filters; lifetime-accuracy pill; **Skip-for-later**
+(sends a question to the back of the queue); **answer-choice shuffling across all
+modes** (no position-memorizing). "Go deeper" is incognito-friendly (copies the
+prompt + opens a BLANK claude.ai chat — claude.ai incognito is UI-only, no URL
+param — so it works on the phone PWA).
+
+**Learn mode (the centerpiece):** walks a 15-concept SYLLABUS (in `index.html`,
+basics→advanced, covering all 90 questions, each id once). Serves one concept at a
+time with varied non-repeating questions; **mastery = 5 correct in a row (any wrong
+answer resets that concept's streak to 0)**, then advances. A **weakness map**
+(📊 Weak spots, in the Learn header + results) shows accuracy by concept, lowest
+first. To add questions to the ladder, also add their id to the right SYLLABUS
+cluster.
 
 Insertion pipeline: append to the `Q` array in `index.html`, validate via headless
 node parse (Q.length, no dup ids, ans in range), bump the SW cache, commit + push.
@@ -76,25 +87,28 @@ gitignored, so none of it is in the public repo):
   yet owned, for future expansion.
 - Master library now 376 PDFs / `eric.bib` 412 entries.
 
-## Next steps (the learning-path roadmap)
+## Next steps
 
-1. **Foundations-first content** — author *basic, basic* definition questions
-   (stress, strain, strain rate, deviatoric vs mean stress, elastic/viscous/plastic,
-   brittle/ductile, viscosity, creep, flow law, dislocation, grain boundary,
-   homologous T, stress exponent n, activation energy…), several varied questions
-   per concept, building up toward the existing Tier-0 material. Crosscheck each set;
-   diff topics/ids against the bank FIRST (a Set-2 dup had to be pulled).
-2. **Adaptive "Learn" mode** (new mode beside the four) — walks the concept syllabus
-   basics→advanced; **mastery gate = 5 correct in a row on a concept (any wrong answer
-   resets that concept's streak to 0)**; subtly-varied questions, never the same one
-   back-to-back; a miss resurfaces the concept.
-3. **Weakness map** — aggregate misses by concept/category so Eric sees where he's thin.
-4. **APS-specific question batch** — large, but only after the foundations ladder exists.
-5. Acquire the 6 outstanding cited works (Stipp & Tullis 2003, Mainprice 2007,
+DONE this session: ✅ foundations Basics set, ✅ Learn mode, ✅ weakness map,
+✅ skip-for-later, ✅ choice shuffling, ✅ incognito Go-deeper.
+
+1. **More question sets** — keep growing the bank (~20/set), each diffed against the
+   bank FIRST (a Set-2 dup had to be pulled), then 3-model crosschecked, then inserted
+   AND added to the right `SYLLABUS` cluster so it joins the Learn ladder.
+2. **APS-specific question batch** — the large APS set Eric wants, now that the
+   foundations ladder exists.
+3. Acquire the 6 outstanding cited works (Stipp & Tullis 2003, Mainprice 2007,
    Gruntfest 1963, Evans & Goetze 1979 low-T, Karato 2008 & Schmid & Boas 1950 books).
+4. Possible polish: a couple of small SYLLABUS clusters (CPO = 3) could use more
+   questions so 5-in-a-row draws from more variety.
 
 ## Session log
 
+- **2026-06-27 (evening)** — Shipped the learning-path centerpiece: **Learn mode**
+  (15-concept syllabus, 5-in-a-row mastery gate that resets on a wrong answer) +
+  **weakness map** + **skip-for-later** + **answer-choice shuffling** + **Basics set
+  (20)**, all headless-tested and deployed (bank 70→90, SW v6). Incognito Go-deeper
+  resolved (claude.ai incognito is UI-only → copy-prompt + blank chat).
 - **2026-06-27 (pm)** — App build-out. Authored + crosscheck-passed + deployed Set 1
   and Set 2 (bank 49→70; one dup pulled). Shipped persistence + 4 modes + tier/category
   filters + incognito "Go deeper". Locked the learning-path design (foundations-first,
