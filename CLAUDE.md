@@ -52,9 +52,11 @@ Live PWA on GitHub Pages: **https://ehiatt.github.io/rheology_quiz/** (URL chang
 with the repo rename — the old `rheology-quiz` URL is dead; reinstall the phone PWA
 from the new one). Registered in `proj` as `rheology_quiz`.
 
-**Question bank = 90.** Set 1 (11) + Set 2 (11) + Basics (20) authored, 3-model
-crosscheck-passed (Claude+GPT+Gemini), and deployed; one dup-concept question pulled.
-The Basics set (tier 0, cat:'Basics') is the bottom of the learning ladder.
+**Question bank = 110.** Set 1 (11) + Set 2 (11) + Basics (20) + APS (20) authored,
+3-model crosscheck-passed (Claude+GPT+Gemini), and deployed; one dup-concept pulled.
+Basics (tier 0, cat:'Basics') is the bottom of the ladder; the APS set (cat:'APS
+Method'/'Piezometry'/'Ferropericlase'/'Deep Earth') covers D-DIA/synchrotron technique
++ the ferropericlase subgrain-piezometer calibration science.
 
 **App features shipped 2026-06-27 (SW cache now v6):** localStorage persistence
 (score, day-streak, per-question seen/missed/skipped, Learn progress); modes
@@ -65,8 +67,9 @@ modes** (no position-memorizing). "Go deeper" is incognito-friendly (copies the
 prompt + opens a BLANK claude.ai chat — claude.ai incognito is UI-only, no URL
 param — so it works on the phone PWA).
 
-**Learn mode (the centerpiece):** walks a 15-concept SYLLABUS (in `index.html`,
-basics→advanced, covering all 90 questions, each id once). Serves one concept at a
+**Learn mode (the centerpiece):** walks a 17-concept SYLLABUS (in `index.html`,
+basics→advanced, covering all 110 questions, each id once; last two clusters are the
+APS synchrotron + ferropericlase-piezometry sets). Serves one concept at a
 time with varied non-repeating questions; **mastery = 5 correct in a row (any wrong
 answer resets that concept's streak to 0)**, then advances. A **weakness map**
 (📊 Weak spots, in the Learn header + results) shows accuracy by concept, lowest
@@ -89,21 +92,24 @@ gitignored, so none of it is in the public repo):
 
 ## Next steps
 
-DONE this session: ✅ foundations Basics set, ✅ Learn mode, ✅ weakness map,
-✅ skip-for-later, ✅ choice shuffling, ✅ incognito Go-deeper.
+DONE: ✅ Basics set, ✅ Learn mode, ✅ weakness map, ✅ skip, ✅ choice shuffling,
+✅ incognito Go-deeper, ✅ **APS set (20)** + its 2 Learn clusters.
 
 1. **More question sets** — keep growing the bank (~20/set), each diffed against the
    bank FIRST (a Set-2 dup had to be pulled), then 3-model crosschecked, then inserted
    AND added to the right `SYLLABUS` cluster so it joins the Learn ladder.
-2. **APS-specific question batch** — the large APS set Eric wants, now that the
-   foundations ladder exists.
-3. Acquire the 6 outstanding cited works (Stipp & Tullis 2003, Mainprice 2007,
+2. Acquire the 6 outstanding cited works (Stipp & Tullis 2003, Mainprice 2007,
    Gruntfest 1963, Evans & Goetze 1979 low-T, Karato 2008 & Schmid & Boas 1950 books).
-4. Possible polish: a couple of small SYLLABUS clusters (CPO = 3) could use more
-   questions so 5-in-a-row draws from more variety.
+   APS papers are all owned (ferropericlase bundle complete; exoplanet paper ruled out).
+3. Possible polish: a few small SYLLABUS clusters (CPO = 3) could use more questions
+   so 5-in-a-row draws from more variety.
 
 ## Session log
 
+- **2026-06-27 (late)** — **APS set (20)** authored + 3-model crosscheck-passed
+  (D-DIA/synchrotron technique + ferropericlase subgrain-piezometer science),
+  gap-checked vs the 17 existing apparatus/piezometry Qs, deployed (bank 90→110,
+  SW v7) and wired into 2 new Learn-ladder clusters. Confirmed all APS papers owned.
 - **2026-06-27 (evening)** — Shipped the learning-path centerpiece: **Learn mode**
   (15-concept syllabus, 5-in-a-row mastery gate that resets on a wrong answer) +
   **weakness map** + **skip-for-later** + **answer-choice shuffling** + **Basics set
